@@ -21,8 +21,8 @@
 #define BAUDRATE_DEF    115200
 #define TIMEOUT_DEF     20  //10*100ms
 
-
-
+static int g_tty_fd = -1;
+static int g_tty_value = -1;
 
 static int g_fd;
 static struct ymodem ymodem;
@@ -30,13 +30,38 @@ static FILE* g_fp;
 
 int _putchar(unsigned char ch)
 {
-    return write(g_fd, &ch, 1);
+    if (g_tty_fd < 0)
+    {
+        g_tty_fd = open("/sys/class/gpio/gpio95/value", O_RDWR);
+    }
+
+    if (g_tty_value != 1)
+    {
+        write(g_tty_fd, "1", 1);
+	g_tty_value = 1;
+	usleep(1000);
+    }
+
+    int ret = write(g_fd, &ch, 1);
+    usleep(500);
+    return ret;
 }
 
 int _getchar(void)
 {
     ssize_t size;
     unsigned char ch;
+    if (g_tty_fd < 0)
+    {
+        g_tty_fd = open("/sys/class/gpio/gpio95/value", O_RDWR);
+    }
+
+    if (g_tty_value != 0)
+    {
+        write(g_tty_fd, "0", 1);
+	g_tty_value = 0;
+	usleep(1000);
+    }
 
     size = read(g_fd, &ch, 1);
     if (size == 1)
@@ -268,6 +293,7 @@ int main(int argc, char *argv[])
     }
 
     close(g_fd);
-    
+    if (g_tty_fd > 0)
+        close(g_tty_fd);
     return 0;
 }

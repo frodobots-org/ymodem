@@ -1,6 +1,7 @@
 #include "ymodem.h"
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #define YMODEM_SEND_MAX_PACKET_SIZE      PACKET_1K_SIZE
 
@@ -546,6 +547,13 @@ static void send_data_packets(struct ymodem *ymodem)
             }
     }
 
+    ymodem_putc_and_show(ymodem, YMODEM_CODE_EOT);
+    usleep(10*10000);
+    ymodem_putc_and_show(ymodem, YMODEM_CODE_EOT);
+    usleep(10*10000);
+    send_packet0(ymodem, 0, 0);
+
+#if 0
     do {
         ymodem_putc_and_show(ymodem, YMODEM_CODE_EOT);
         ch = ymodem_getc_and_show(ymodem);
@@ -561,6 +569,7 @@ static void send_data_packets(struct ymodem *ymodem)
             } while((ch != YMODEM_CODE_ACK) && (ch != -1));
         }
     }
+#endif
     if (ymodem->end_packet_cb)
         ymodem->end_packet_cb(NULL, 0);
 }
