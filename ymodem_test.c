@@ -43,7 +43,7 @@ int _putchar(unsigned char ch)
     }
 
     int ret = write(g_fd, &ch, 1);
-    usleep(500);
+    usleep(1000);
     return ret;
 }
 
